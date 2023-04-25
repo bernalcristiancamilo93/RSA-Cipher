@@ -1,0 +1,7 @@
+{
+  "name": "rsa-cipher",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
