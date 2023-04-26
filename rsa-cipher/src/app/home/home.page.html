@@ -1,20 +1,191 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title> Cifrado RSA para CAYD - C. Camilo Bernal </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-card class="main-card">
+          <ion-grid>
+            <form [formGroup]="rsaForm">
+              <ion-row class="ion-margin">
+                <ion-col>
+                  <ion-card-header>
+                    <ion-card-title>Cifrador / Descifrador RSA</ion-card-title>
+                  </ion-card-header>
+                </ion-col>
+              </ion-row>
+              <ion-row class="ion-align-items-center ion-margin">
+                <ion-col>
+                  <ion-item lines="none">
+                    <ion-radio-group formControlName="selectorFuncion">
+                      <ion-radio value="cifrar" class="ion-margin-bottom">
+                        Cifrar
+                      </ion-radio>
+                      <ion-radio value="descifrar" class="ion-margin-bottom">
+                        Descifrar
+                      </ion-radio>
+                    </ion-radio-group>
+                  </ion-item>
+                </ion-col>
+                <ion-col>
+                  <ion-item>
+                    <ion-input
+                      formControlName="numeroLetrasPorBloque"
+                      label="Letras por Bloque"
+                      labelPlacement="floating"
+                      type="number"
+                    >
+                    </ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+              <ion-row class="ion-margin">
+                <ion-col>
+                  <ion-row class="ion-align-items-center">
+                    <ion-col>
+                      <ion-item>
+                        <ion-input
+                          label="p"
+                          formControlName="claveP"
+                          type="number"
+                          placeholder="Ingrese un número primo"
+                          labelPlacement="stacked"
+                        >
+                        </ion-input>
+                      </ion-item>
+                      <ion-item>
+                        <ion-input
+                          label="q"
+                          formControlName="claveQ"
+                          type="number"
+                          placeholder="Ingrese un número primo"
+                          labelPlacement="stacked"
+                        >
+                        </ion-input>
+                      </ion-item>
+                      <ion-item>
+                        <ion-input
+                          label="e"
+                          formControlName="claveE"
+                          type="number"
+                          placeholder="Clave de cifrado"
+                          labelPlacement="stacked"
+                        >
+                        </ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col>
+                      <ion-item lines="none">
+                        <ion-button (click)="generarClaves()">
+                          Generar Claves
+                        </ion-button>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row>
+                    <ion-col>
+                      <ion-item>
+                        <ion-input
+                          label="N"
+                          formControlName="claveN"
+                          type="number"
+                          placeholder="Número N"
+                          labelPlacement="floating"
+                        >
+                        </ion-input>
+                        <ion-input
+                          label="&Phi;(N)"
+                          formControlName="clavePhiN"
+                          type="number"
+                          placeholder="Número &Phi;(N)"
+                          labelPlacement="floating"
+                          readonly="true"
+                        >
+                        </ion-input>
+                      </ion-item>
+                      <ion-item>
+                        <ion-input
+                          label="d"
+                          formControlName="claveD"
+                          type="number"
+                          placeholder="Clave de descifrado"
+                          labelPlacement="floating"
+                        >
+                        </ion-input>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                </ion-col>
+                <ion-col>
+                  <ion-item>
+                    <ion-textarea
+                      label="Mensaje"
+                      formControlName="mensajePlano"
+                      labelPlacement="stacked"
+                      placeholder="Ingrese su mensaje acá"
+                      autoGrow="true"
+                      rows="1"
+                    >
+                    </ion-textarea>
+                    <ion-button (click)="calcular()"> Calcular </ion-button>
+                  </ion-item>
+                  <ion-item>
+                    <ion-textarea
+                      label="Mensaje Formateado"
+                      formControlName="mensajeFormateado"
+                      labelPlacement="floating"
+                      placeholder="El mensaje formateado aparecerá acá"
+                      readonly="true"
+                      autoGrow="true"
+                      rows="1"
+                    >
+                    </ion-textarea>
+                  </ion-item>
+                  <ion-item>
+                    <ion-textarea
+                      label="Mensaje Final"
+                      formControlName="mensajeFinal"
+                      labelPlacement="floating"
+                      placeholder="El mensaje cifrado / descifrado aparecerá acá"
+                      readonly="true"
+                      autoGrow="true"
+                      rows="1"
+                    >
+                    </ion-textarea>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+            </form>
+            <ion-row class="ion-margin">
+              <ion-col>
+                <ion-card>
+                  <ion-card-header>
+                    <ion-card-title> Alfabeto </ion-card-title>
+                    <ion-card-subtitle>
+                      Seleccione los caracteres que desea usar en el proceso de
+                      cifrado.
+                    </ion-card-subtitle>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <ion-checkbox
+                      *ngFor="let caracter of alfabeto"
+                      class="ion-margin"
+                      [(ngModel)]="caracter.checked"
+                      [checked]="caracter.checked"
+                    >
+                      {{ caracter.value | uppercase }}
+                    </ion-checkbox>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

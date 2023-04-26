@@ -5,7 +5,7 @@
     {
       "files": ["*.ts"],
       "parserOptions": {
-        "project": ["tsconfig.json"],
+        "project": ["rsa-cipher/tsconfig.json"],
         "createDefaultProgram": true
       },
       "extends": [
