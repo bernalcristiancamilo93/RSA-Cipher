@@ -110,7 +110,11 @@ export class HomePage {
     const zMin = Math.pow(this.totalLetrasAlfabeto(), letrasPorBloque);
     const zMax = Math.pow(this.totalLetrasAlfabeto(), letrasPorBloque + 1);
 
-    if (numeroN <= zMin) {
+    console.log(numeroN);
+    console.log(zMin);
+    console.log(zMax);
+
+    if (!(zMin < numeroN && numeroN < zMax)) {
       this.alertCtrl
         .create({
           header: '¡Error!',
@@ -209,58 +213,79 @@ export class HomePage {
   }
 
   calcular() {
-    if (!this.numLetrasPorBloqueCorrecto()) {
-      this.alertCtrl
-        .create({
-          header: '¡Error!',
-          message: 'El número de letras por bloque es incorrecto.',
-          buttons: ['Okay'],
-        })
-        .then((alertElement) => {
-          alertElement.present();
-        });
-      return;
-    }
-    let arrayTexto = this.rsaForm.get('mensajePlano')?.value;
-    if (arrayTexto === null || arrayTexto === '') {
-      return;
-    }
-
-    // Quita los espacios, acentos, signos de puntuación y pasa todo a mayúsculas.
-    arrayTexto = this.rsaForm
-      .get('mensajePlano')
-      ?.value.toUpperCase()
-      .replace(/\s/g, '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()!¡¿?]/g, '');
-
-    // Calcula el número de letras necesario para completar el bloque.
-    if (
-      arrayTexto.length % this.rsaForm.get('numeroLetrasPorBloque')?.value !==
-      0
-    ) {
-      const fit =
-        this.rsaForm.get('numeroLetrasPorBloque')?.value -
-        (arrayTexto.length % this.rsaForm.get('numeroLetrasPorBloque')?.value);
-
-      // Llena con la última letra o con X.
-      // const char = arrayTexto.charAt(arrayTexto.length - 1);
-      const char = 'X';
-
-      for (let i = 0; i < fit; i++) {
-        arrayTexto += char;
-      }
-    }
-
-    this.rsaForm.get('mensajeFormateado')?.patchValue(arrayTexto);
-
     const proceso = this.rsaForm.get('selectorFuncion')?.value;
     const claveE: number = this.rsaForm.get('claveE')?.value;
     const claveN: number = this.rsaForm.get('claveN')?.value;
     const claveD: number = this.rsaForm.get('claveD')?.value;
 
     if (proceso === 'cifrar' && claveE !== null && claveN !== null) {
+      if (!this.numLetrasPorBloqueCorrecto()) {
+        this.alertCtrl
+          .create({
+            header: '¡Error!',
+            message: 'El número de letras por bloque es incorrecto.',
+            buttons: ['Okay'],
+          })
+          .then((alertElement) => {
+            alertElement.present();
+          });
+        return;
+      }
+      let arrayTexto = this.rsaForm.get('mensajePlano')?.value;
+      if (arrayTexto === null || arrayTexto === '') {
+        return;
+      }
+
+      // Quita los espacios, acentos, signos de puntuación y pasa todo a mayúsculas.
+      arrayTexto = this.rsaForm
+        .get('mensajePlano')
+        ?.value.toUpperCase()
+        .replace(/\s/g, '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()!¡¿?]/g, '');
+
+      // Calcula el número de letras necesario para completar el bloque.
+      const numeroLetrasPorBloque: number = this.rsaForm.get(
+        'numeroLetrasPorBloque'
+      )?.value;
+
+      if (arrayTexto.length % numeroLetrasPorBloque !== 0) {
+        const fit =
+          numeroLetrasPorBloque - (arrayTexto.length % numeroLetrasPorBloque);
+
+        // Llena con la última letra o con X.
+        // const char = arrayTexto.charAt(arrayTexto.length - 1);
+        const char = 'X';
+
+        for (let i = 0; i < fit; i++) {
+          arrayTexto += char;
+        }
+      }
+
+      this.rsaForm.get('mensajeFormateado')?.patchValue(arrayTexto);
+
+      // Verificar que N esté dentro de z^n y z^n+1
+      const zMin = Math.pow(this.totalLetrasAlfabeto(), numeroLetrasPorBloque);
+      const zMax = Math.pow(
+        this.totalLetrasAlfabeto(),
+        numeroLetrasPorBloque + 1
+      );
+
+      if (claveN <= zMin || claveN >= zMax) {
+        this.alertCtrl
+          .create({
+            header: '¡Error!',
+            message: `N no cumple la igualdad. Seleccione un número de letras por
+            bloque distinto.`,
+            buttons: ['Okay'],
+          })
+          .then((alertElement) => {
+            alertElement.present();
+          });
+        return;
+      }
+
       this.cifrado();
     } else if (proceso === 'descifrar' && claveD !== null && claveN !== null) {
       this.descifrado();
@@ -319,14 +344,31 @@ export class HomePage {
     let mensajeCifradoFinal: string[] = [];
 
     for (const bloque of pesosCifrados) {
-      console.log(bloque.toString().split(''));
+      // console.log(bloque.toString().split(''));
     }
 
     this.rsaForm.get('mensajeFinal')?.patchValue(pesosCifrados);
   }
 
   descifrado() {
-    // TODO
+    // Se fragmenta el mensaje en caracteres individuales
+    const mensajeParticionado: string[] = this.rsaForm
+      .get('mensajePlano')
+      ?.value.split(',');
+
+    console.log('mensajeParticionado', mensajeParticionado);
+
+    // Se calcula el cifrado para cada peso en bloque
+    let pesosCifrados: number[] = [];
+    const claveD: number = this.rsaForm.get('claveD')?.value;
+    const claveN: number = this.rsaForm.get('claveN')?.value;
+    for (const bloque of mensajeParticionado) {
+      pesosCifrados.push(this.calculoExponenteModulo(+bloque, claveD, claveN));
+    }
+
+    console.log('pesosCifrados', pesosCifrados);
+
+    this.rsaForm.get('mensajeFinal')?.patchValue(pesosCifrados);
   }
 
   asignarPeso(letra: string): number {
