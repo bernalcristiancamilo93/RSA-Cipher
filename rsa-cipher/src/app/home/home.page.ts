@@ -59,7 +59,7 @@ export class HomePage {
     claveD: new FormControl(null),
     claveN: new FormControl(null),
     clavePhiN: new FormControl(null),
-    mensajePlano: new FormControl('publico', Validators.required),
+    mensajePlano: new FormControl('', Validators.required),
     mensajeFormateado: new FormControl(null),
     mensajeFinal: new FormControl(null),
   });
